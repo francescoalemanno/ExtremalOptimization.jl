@@ -1,0 +1,13 @@
+name = "ExtremalOptimization"
+uuid = "3b6521e1-56b2-406b-b1f7-6ae6ec1fb69e"
+authors = ["Francesco Alemanno <francescoalemanno710@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
