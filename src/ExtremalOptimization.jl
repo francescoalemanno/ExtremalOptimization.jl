@@ -1,6 +1,7 @@
 module ExtremalOptimization
     using Random, StatsBase
-    function optimize(f,s,N;γ::Float64=1.4,rng=Random.GLOBAL_RNG,reps_per_particle=100)
+
+    function optimize(f,s,N;γ=1.2,β=1.0,rng=Random.GLOBAL_RNG,reps_per_particle=100)
         P = [s(i) for i=1:N]
         C = [f(P[i]) for i=1:N]
         order = sortperm(C)
@@ -9,7 +10,8 @@ module ExtremalOptimization
             i = order[sample(rng,W)]
             j = i
             while j==i; j=rand(rng,1:N); end
-            nP=P[i]+abs2(randn(rng))*(P[j]-P[i])/2
+            α=(1 + β * abs2(randn(rng)))/2
+            nP=P[i]+α*(P[j]-P[i])
             nC=f(nP)
             P[i]=nP
             C[i]=nC
