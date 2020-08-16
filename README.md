@@ -5,7 +5,7 @@
 ## API:
 
 ```julia
-optimize(f, s, N; β=1.0, γ=1.2, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
+optimize(f,s,N; β=1.0, γ=1.2, atol=0.0, rtol=sqrt(eps(1.0)), verbose=false, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
 ```
 
 - `f` : cost function to minimize, whose argument is either a scalar or a vector, must returns a scalar value.

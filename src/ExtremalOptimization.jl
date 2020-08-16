@@ -14,6 +14,14 @@ module ExtremalOptimization
         s::tS
     end
 
+    function hasconverged(state::EOState, atol, rtol)
+        a=state.C[state.order[1]]
+        b=state.C[state.order[end]]
+        Δ=abs(a-b)
+        M=abs(a)+abs(b)
+        Δ<=max(atol,M*rtol)
+    end
+
     function eostate(problem::EOProblem,N; γ, kw...)
         P = [problem.s(i) for i=1:N]
         C = [problem.f(P[i]) for i=1:N]
@@ -45,7 +53,7 @@ module ExtremalOptimization
     end
 """
 ```julia
-optimize(f, s, N; β=1.0, γ=1.2, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
+optimize(f,s,N; β=1.0, γ=1.2, atol=0.0, rtol=sqrt(eps(1.0)), verbose=false, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
 ```
 
 - `f` : cost function to minimize, whose argument is either a scalar or a vector, must returns a scalar value.
@@ -66,13 +74,15 @@ output
 ```
 as expected the algorithm has found the optimum at `(1, 1)`.
 """
-    function optimize(f,s,N;β=1.0,γ=1.2,rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
+    function optimize(f,s,N; β=1.0, γ=1.2, atol=0.0, rtol=sqrt(eps(1.0)), verbose=false, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
         problem=EOProblem(f,s)
         best, cost, state=eostate(problem,N;γ)
         callback(state)
         for i in 1:(N*reps_per_particle)
             best, cost, state=eostate(problem,state; β,rng)
             callback(state)
+            verbose && println(i," ",cost)
+            hasconverged(state,atol,rtol) && break
         end
         (x=best, fx=cost)
     end
