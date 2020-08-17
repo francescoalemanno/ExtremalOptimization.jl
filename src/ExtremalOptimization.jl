@@ -31,9 +31,13 @@ end
 function eostate(problem::EOProblem, N; τ, kw...)
     P = [problem.s(i) for i = 1:N]
     C = [problem.f(P[i]) for i = 1:N]
+    for i in eachindex(P)
+        isfinite(C[i]) && continue
+        error("The cost function has produced non-finite values for the initial point: $(P[i])")
+    end
     order = sortperm(C)
     wS = N^(-τ)
-    W = Weights([i^(-τ)-wS for i = N:-1:1])
+    W = Weights([i^(-τ) - wS for i = N:-1:1])
     best = order[1]
     P[best], C[best], EOState(P, C, order, W, N)
 end
@@ -46,12 +50,17 @@ function sample_distinct(rng, N, set, notset)
     return (s, sample_distinct(rng, N - 1, set, (notset..., s))...)
 end
 
-function eostate(problem::EOProblem, S::EOState; β, rng, kw...)
+function eostate(problem::EOProblem, S::EOState; β, rng, verbose, kw...)
     α = β * randn(rng)
     i = S.order[sample(rng, S.W)]
+    @label regen
     j, k, q = sample_distinct(rng, 3, 1:S.N, (i,))
     nP = S.P[j] + α * (S.P[k] - S.P[q])
     nC = problem.f(nP)
+    isfinite(nC) || begin
+        verbose && println("Failed function evaluation at $nP")
+        @goto regen
+    end
     S.P[i] = nP
     S.C[i] = nC
     sortperm!(S.order, S.C)
@@ -116,13 +125,13 @@ function optimize(
     callback(state)
     fnevals = N
     for i = 1:(N*reps_per_particle)
-        best, cost, state = eostate(problem, state; β, rng)
+        best, cost, state = eostate(problem, state; β, rng, verbose)
         fnevals += 1
         callback(state)
         verbose && println(i, " ", cost)
         hasconverged(state, atol, rtol, f_atol, f_rtol) && break
     end
-    (x = best, fx = cost, f_nevals=fnevals)
+    (x = best, fx = cost, f_nevals = fnevals)
 end
 
 export optimize
