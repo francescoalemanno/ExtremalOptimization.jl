@@ -1,27 +1,54 @@
 # ExtremalOptimization
 
+for functions of continuous variables.
+
 [![Build Status](https://github.com/francescoalemanno/ExtremalOptimization.jl/workflows/CI/badge.svg)](https://github.com/francescoalemanno/ExtremalOptimization.jl/actions)
+
+This package implements the basic mechanism of Extremal Optimization (τ-EO) as described in [Boettcher, Stefan; Percus, Allon G. (2001-06-04). "Optimization with Extremal Dynamics". Physical Review Letters](https://arxiv.org/pdf/cond-mat/0010337.pdf).
+
+The only twist w.r.t. classical EO is an affine invariant update equation for the worst performing solutions,
+
+<!-- $
+X \to X_1 + \beta \cdot Z \cdot (X_2 - X_3), \,\,\,\, Z \sim \mathcal{N}(0,1)
+$ --> <img style="transform: translateY(0.25em);" src="svg/update_eq.svg"/>
+
+where X₁, X₂, X₃ are chosen random inside the pool of candidate solutions, this update mechanism allows EO to work on continuous spaces, and be invariant w.r.t. affine transformations of X and monotonous tranformations of the cost function.
 
 ## API:
 
 ```julia
-optimize(f,s,N; β=1.0, γ=1.2, atol=0.0, rtol=sqrt(eps(1.0)), verbose=false, rng=Random.GLOBAL_RNG, reps_per_particle=100, callback=state->nothing)
+function optimize(
+    f,
+    s,
+    N;
+    reps_per_particle = 100,
+    β = 1.0,
+    τ = 1.2,
+    atol = 0.0,
+    rtol = sqrt(eps(1.0)),
+    f_atol = 0.0,
+    f_rtol = sqrt(eps(1.0)),
+    verbose = false,
+    rng = Random.GLOBAL_RNG,
+    callback = state -> nothing,
+)
 ```
 
 - `f` : cost function to minimize, whose argument is either a scalar or a vector, must returns a scalar value.
 - `s` : function whose input is the particle number and output is a random initial point to be ranked by `f`.
 - `N` : number of particles to use, choose a number greater than `d+4` where `d` is the number of dimensions.
-- `reps_per_particle` : total number of iterations per particle.
+- `reps_per_particle` : maximum number of iterations per particle.
 
 ## Usage example:
 
 ```julia
+using ExtremalOptimization
 rosenbrock2d(x) = (x[1]-1)^2+(x[2]-x[1]^2)^2
 initpoint(i) = randn(2)
 optimize(rosenbrock2d, initpoint, 50)
 ```
 output
 ```
-(x = [0.9999999999993153, 0.9999999999997592], fx = 1.742385603613753e-24)
+(x = [1.000000001, 1.000000004], fx = 4.0e-18, f_nevals = 2726)
 ```
-as expected the algorithm has found the optimum at `(1, 1)`.
+as expected the algorithm has found the optimum at `(1, 1)`, up to the specified tolerance.
