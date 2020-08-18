@@ -51,11 +51,10 @@ function sample_distinct(rng, N, set, notset)
 end
 
 function eostate(problem::EOProblem, S::EOState; β, rng, verbose, kw...)
-    α = β * randn(rng)
     i = S.order[sample(rng, S.W)]
     @label regen
     j, k, q = sample_distinct(rng, 3, 1:S.N, (i,))
-    nP = S.P[j] + α * (S.P[k] - S.P[q])
+    nP = S.P[j] + β * randn(rng) * (S.P[k] - S.P[q])
     nC = problem.f(nP)
     isfinite(nC) || begin
         verbose && println("Failed function evaluation at $nP")
