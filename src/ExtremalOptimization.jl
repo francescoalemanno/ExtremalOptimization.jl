@@ -36,8 +36,10 @@ function eostate(problem::EOProblem, N; τ, kw...)
         error("The cost function has produced non-finite values for the initial point: $(P[i])")
     end
     order = sortperm(C)
-    wS = N^(-τ)
-    W = Weights([i^(-τ) - wS for i = N:-1:1])
+    wS = [i^(-τ) for i = N:-1:1]
+    wS[end] += wS[1]
+    wS[1] = 0
+    W = Weights(wS)
     best = order[1]
     P[best], C[best], EOState(P, C, order, W, N)
 end
