@@ -22,9 +22,9 @@ end
 
 function hasconverged(state::EOState, atol, rtol, f_atol, f_rtol)
     f_a = state.C[state.order[1]]
-    f_b = state.C[state.order[end]]
+    f_b = state.C[state.order[2]]
     sol_a = state.P[state.order[1]]
-    sol_b = state.P[state.order[end]]
+    sol_b = state.P[state.order[2]]
     approxequality(f_a, f_b, f_atol, f_rtol) || approxequality(sol_a, sol_b, atol, rtol)
 end
 
@@ -54,7 +54,7 @@ function eostate(problem::EOProblem, S::EOState; β, rng, verbose, kw...)
     i = S.order[sample(rng, S.W)]
     @label regen
     j, k, q = sample_distinct(rng, 3, 1:S.N, (i,))
-    nP = S.P[j] + β * randn(rng) * (S.P[k] - S.P[q])
+    nP = S.P[j] + (β/sqrt(2)) * randn(rng) * (S.P[k] - S.P[q])
     nC = problem.f(nP)
     isfinite(nC) || begin
         verbose && println("Failed function evaluation at $nP")
@@ -73,8 +73,8 @@ function optimize(
     s,
     N;
     reps_per_particle = 100,
-    β = 1.0,
-    τ = 1.2,
+    β = 1.5,
+    A = 1.0,
     atol = 0.0,
     rtol = sqrt(eps(1.0)),
     f_atol = 0.0,
@@ -109,8 +109,8 @@ function optimize(
     s,
     N;
     reps_per_particle = 100,
-    β = 1.0,
-    τ = 1.2,
+    β = 1.5,
+    A = 1.0,
     atol = 0.0,
     rtol = sqrt(eps(1.0)),
     f_atol = 0.0,
@@ -120,6 +120,7 @@ function optimize(
     callback = state -> nothing,
 )
     problem = EOProblem(f, s)
+    τ = 1 + A / log(N)
     best, cost, state = eostate(problem, N; τ)
     callback(state)
     fnevals = N

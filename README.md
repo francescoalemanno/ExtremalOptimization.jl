@@ -9,21 +9,20 @@ This package implements the basic mechanism of Extremal Optimization (τ-EO) as 
 The only twist w.r.t. classical EO is an affine invariant update equation for the worst performing solutions,
 
 <!-- $
-X \to X_1 + \beta \cdot Z \cdot (X_2 - X_3), \,\,\,\, Z \sim \mathcal{N}(0,1)
-$ --> <img style="transform: translateY(0.25em);" src="svg/update_eq.svg"/>
+X \to X_1 + \frac{\beta}{\sqrt{2}} \cdot Z \cdot (X_2 - X_3), \,\,\,\, Z \sim \mathcal{N}(0,1)
+$ --> <img style="transform: translateY(0.25em);" src="svg/eq.svg"/>
 
 where X₁, X₂, X₃ are chosen random inside the pool of candidate solutions, this update mechanism allows EO to work on continuous spaces, and be invariant w.r.t. affine transformations of X and monotonous tranformations of the cost function.
 
 ## API:
-
 ```julia
 function optimize(
     f,
     s,
     N;
     reps_per_particle = 100,
-    β = 1.0,
-    τ = 1.2,
+    β = 1.5,
+    A = 1.0,
     atol = 0.0,
     rtol = sqrt(eps(1.0)),
     f_atol = 0.0,
@@ -45,10 +44,10 @@ function optimize(
 using ExtremalOptimization
 rosenbrock2d(x) = (x[1]-1)^2+(x[2]-x[1]^2)^2
 initpoint(i) = randn(2)
-optimize(rosenbrock2d, initpoint, 50)
+optimize(rosenbrock2d, initpoint, 15)
 ```
 output
 ```
-(x = [1.000000001, 1.000000004], fx = 4.0e-18, f_nevals = 2726)
+(x = [0.99999998, 0.99999987], fx = 7.61e-15, f_nevals = 1172)
 ```
 as expected the algorithm has found the optimum at `(1, 1)`, up to the specified tolerance.
