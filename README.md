@@ -42,12 +42,12 @@ function optimize(
 
 ```julia
 using ExtremalOptimization
-rosenbrock2d(x) = (x[1]-1)^2+(x[2]-x[1]^2)^2
+rosenbrock2d(x) = (x[1] - 1)^2 + 100*(x[2] - x[1]^2)^2
 initpoint(i) = randn(2)
-optimize(rosenbrock2d, initpoint, 15)
+optimize(rosenbrock2d, initpoint, 20)
 ```
 output
 ```
-(x = [0.99999998, 0.99999987], fx = 7.61e-15, f_nevals = 1172)
+(x = [1.0000008, 1.0000016], fx = 6.50e-13, f_nevals = 1109)
 ```
 as expected the algorithm has found the optimum at `(1, 1)`, up to the specified tolerance.

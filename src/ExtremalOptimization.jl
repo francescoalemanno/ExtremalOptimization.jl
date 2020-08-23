@@ -66,6 +66,7 @@ function eostate(problem::EOProblem, S::EOState; β, rng, verbose, kw...)
     best = S.order[1]
     S.P[best], S.C[best], EOState(S.P, S.C, S.order, S.W, S.N)
 end
+
 """
 ```julia
 function optimize(
@@ -94,13 +95,13 @@ function optimize(
 
 ```julia
 using ExtremalOptimization
-rosenbrock2d(x) = (x[1]-1)^2+(x[2]-x[1]^2)^2
+rosenbrock2d(x) = (x[1] - 1)^2 + 100*(x[2] - x[1]^2)^2
 initpoint(i) = randn(2)
-optimize(rosenbrock2d, initpoint, 50)
+optimize(rosenbrock2d, initpoint, 20)
 ```
 output
 ```
-(x = [1.000000001, 1.000000004], fx = 4.0e-18, f_nevals = 2726)
+(x = [1.0000008, 1.0000016], fx = 6.50e-13, f_nevals = 1109)
 ```
 as expected the algorithm has found the optimum at `(1, 1)`, up to the specified tolerance.
 """
